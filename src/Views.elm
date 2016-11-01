@@ -49,13 +49,7 @@ hideCharacters secretWord gameState guessedCharacters =
     case gameState of
         Playing ->
             String.toList secretWord
-                |> List.map
-                    (\c ->
-                        if Set.member c guessedCharacters then
-                            c
-                        else
-                            '_'
-                    )
+                |> List.map (hideSingleCharacter guessedCharacters)
                 |> String.fromList
 
         Won ->
@@ -63,6 +57,14 @@ hideCharacters secretWord gameState guessedCharacters =
 
         Lost ->
             secretWord
+
+
+hideSingleCharacter : Letters -> Char -> Char
+hideSingleCharacter guessedCharacters guessedCharacter =
+    if Set.member guessedCharacter guessedCharacters then
+        guessedCharacter
+    else
+        '_'
 
 
 viewButtons : Game -> Html Msg
