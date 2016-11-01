@@ -124,7 +124,7 @@ filename attemptsLeft =
         zeroPadded =
             String.padLeft 2 '0' (toString attemptsLeft)
     in
-        "../img/hangman_" ++ (zeroPadded) ++ ".png"
+        "img/hangman_" ++ (zeroPadded) ++ ".png"
 
 
 centerStyle =
