@@ -26,11 +26,13 @@ update : Msg -> Game -> Game
 update msg game =
     case msg of
         Guess character ->
-            guessedCharacter game character
+            game
+                |> guessedCharacter character
+                |> determineNewState
 
 
-guessedCharacter : Game -> Char -> Game
-guessedCharacter game character =
+guessedCharacter : Char -> Game -> Game
+guessedCharacter character game =
     let
         newGuessedCharacters =
             Set.insert character game.guessedCharacters
@@ -43,28 +45,28 @@ guessedCharacter game character =
                 game.attemptsLeft
             else
                 game.attemptsLeft - 1
-
-        newGame =
-            { game
-                | guessedCharacters = newGuessedCharacters
-                , attemptsLeft = newAttemptsLeft
-            }
     in
-        { newGame | state = determineNewState newGame }
+        { game
+            | guessedCharacters = newGuessedCharacters
+            , attemptsLeft = newAttemptsLeft
+        }
 
 
-determineNewState : Game -> GameState
+determineNewState : Game -> Game
 determineNewState game =
     let
         everyLetterIsGuessedCorrectly =
             String.all (\c -> Set.member c game.guessedCharacters) game.staticData.secretWord
+
+        newGameState =
+            if game.attemptsLeft == 0 then
+                Lost
+            else if everyLetterIsGuessedCorrectly then
+                Won
+            else
+                Playing
     in
-        if game.attemptsLeft == 0 then
-            Lost
-        else if everyLetterIsGuessedCorrectly then
-            Won
-        else
-            Playing
+        { game | state = newGameState }
 
 
 englishAlphabetUppercased : Letters
