@@ -32,31 +32,37 @@ viewGame game =
 viewSecretWord : Game -> Html Msg
 viewSecretWord game =
     let
-        word =
-            hideCharacters game.staticData.secretWord game.state game.guessedCharacters
-
-        wordWithSpaces =
-            word
-                |> String.toList
-                |> List.intersperse ' '
-                |> String.fromList
+        words =
+            hideCharacters game.staticData.secretWords game.state game.guessedCharacters
     in
-        h2 [] [ text wordWithSpaces ]
+        h2 [ style [ ( "font-family", "courier" ) ] ] [ text (String.join "   " words) ]
 
 
-hideCharacters : String -> GameState -> Letters -> String
-hideCharacters secretWord gameState guessedCharacters =
+hideCharacters : Words -> GameState -> Letters -> Words
+hideCharacters secretWords gameState guessedCharacters =
     case gameState of
         Playing ->
-            String.toList secretWord
-                |> List.map (hideSingleCharacter guessedCharacters)
-                |> String.fromList
+            secretWords
+                |> List.map (hideSingleCharacterInWord guessedCharacters)
 
+        -- |> List.map
+        -- |> List.map (\w -> (List.map (hideSingleCharacter guessedCharacters) w))
+        -- |> List.map (\w -> toString (List.map (hideSingleCharacter guessedCharacters) (String.toList w)))
+        -- |> List.map (\w -> List.map (List.map hideSingleCharacter guessedCharacters))
         Won ->
-            secretWord
+            secretWords
 
         Lost ->
-            secretWord
+            secretWords
+
+
+hideSingleCharacterInWord : Letters -> String -> String
+hideSingleCharacterInWord guessedCharacters word =
+    word
+        |> String.toList
+        |> List.map (hideSingleCharacter guessedCharacters)
+        |> List.intersperse ' '
+        |> String.fromList
 
 
 hideSingleCharacter : Letters -> Char -> Char

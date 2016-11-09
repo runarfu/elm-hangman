@@ -6,11 +6,11 @@ import String
 import Types exposing (..)
 
 
-newStandardGame : String -> Game
-newStandardGame secretWord =
+newStandardGame : Words -> Game
+newStandardGame secretWords =
     let
         staticData =
-            { secretWord = String.map Char.toUpper secretWord
+            { secretWords = uppercaseWords secretWords
             , alphabet = englishAlphabetUppercased
             , maxGuesses = 10
             }
@@ -20,6 +20,11 @@ newStandardGame secretWord =
         , attemptsLeft = staticData.maxGuesses
         , state = Playing
         }
+
+
+uppercaseWords : Words -> Words
+uppercaseWords words =
+    List.map (String.map Char.toUpper) words
 
 
 update : Msg -> Game -> Game
@@ -38,8 +43,9 @@ guessedCharacter character game =
             Set.insert character game.guessedCharacters
 
         guessedRight =
-            List.member character (String.toList game.staticData.secretWord)
+            List.any (\w -> (String.contains (String.fromChar character) w)) game.staticData.secretWords
 
+        -- List.any (List.member character) String.join "" game.staticData.secretWords
         newAttemptsLeft =
             if guessedRight then
                 game.attemptsLeft
@@ -56,8 +62,12 @@ determineNewState : Game -> Game
 determineNewState game =
     let
         everyLetterIsGuessedCorrectly =
-            String.all (\c -> Set.member c game.guessedCharacters) game.staticData.secretWord
+            game.staticData.secretWords
+                |> String.join ""
+                |> String.toList
+                |> List.all (\c -> Set.member c game.guessedCharacters)
 
+        -- List.all (\w -> Set.member c game.guessedCharacters) game.staticData.secretWords
         newGameState =
             if game.attemptsLeft == 0 then
                 Lost
