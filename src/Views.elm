@@ -17,46 +17,48 @@ view game =
 
 
 header =
-    h1 [] [ text "Hangman" ]
+    h1 [] [ text "Hangman in Elm" ]
 
 
 viewGame : Game -> Html Msg
 viewGame game =
     div []
-        [ viewSecretWord game
+        [ viewSecretWords game
         , viewButtons game
         , viewProgress game
         ]
 
 
-viewSecretWord : Game -> Html Msg
-viewSecretWord game =
-    let
-        word =
-            hideCharacters game.staticData.secretWord game.state game.guessedCharacters
-
-        wordWithSpaces =
-            word
-                |> String.toList
-                |> List.intersperse ' '
-                |> String.fromList
-    in
-        h2 [] [ text wordWithSpaces ]
+viewSecretWords : Game -> Html Msg
+viewSecretWords game =
+    h2 [ style [ ( "font-family", "courier" ) ] ]
+        [ hideUnguessedCharacters game
+            |> List.map spaceLetters
+            |> String.join " - "
+            |> text
+        ]
 
 
-hideCharacters : String -> GameState -> Letters -> String
-hideCharacters secretWord gameState guessedCharacters =
-    case gameState of
+hideUnguessedCharacters : Game -> Words
+hideUnguessedCharacters game =
+    case game.state of
         Playing ->
-            String.toList secretWord
-                |> List.map (hideSingleCharacter guessedCharacters)
-                |> String.fromList
+            game.staticData.secretWords
+                |> List.map (hideSingleCharacterInWord game.guessedCharacters)
 
         Won ->
-            secretWord
+            game.staticData.secretWords
 
         Lost ->
-            secretWord
+            game.staticData.secretWords
+
+
+hideSingleCharacterInWord : Letters -> String -> String
+hideSingleCharacterInWord guessedCharacters word =
+    word
+        |> String.toList
+        |> List.map (hideSingleCharacter guessedCharacters)
+        |> String.fromList
 
 
 hideSingleCharacter : Letters -> Char -> Char
@@ -65,6 +67,14 @@ hideSingleCharacter guessedCharacters guessedCharacter =
         guessedCharacter
     else
         '_'
+
+
+spaceLetters : String -> String
+spaceLetters string =
+    string
+        |> String.toList
+        |> List.intersperse ' '
+        |> String.fromList
 
 
 viewButtons : Game -> Html Msg
@@ -104,7 +114,18 @@ progressStatusMessage : Game -> String
 progressStatusMessage game =
     case game.state of
         Playing ->
-            "You have " ++ (toString game.attemptsLeft) ++ " attempts left"
+            let
+                pluralOrSingularAttempt =
+                    if game.attemptsLeft == 1 then
+                        "attempt"
+                    else
+                        "attempts"
+            in
+                "You have "
+                    ++ (toString game.attemptsLeft)
+                    ++ " "
+                    ++ pluralOrSingularAttempt
+                    ++ " left"
 
         Won ->
             "You won!"
