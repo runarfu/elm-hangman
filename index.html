@@ -8001,7 +8001,7 @@ var _runarfu$elm_hangman$Types$Game = F4(
 	});
 var _runarfu$elm_hangman$Types$StaticData = F3(
 	function (a, b, c) {
-		return {secretWord: a, alphabet: b, maxGuesses: c};
+		return {secretWords: a, alphabet: b, maxGuesses: c};
 	});
 var _runarfu$elm_hangman$Types$Guess = function (a) {
 	return {ctor: 'Guess', _0: a};
@@ -8009,6 +8009,30 @@ var _runarfu$elm_hangman$Types$Guess = function (a) {
 var _runarfu$elm_hangman$Types$Won = {ctor: 'Won'};
 var _runarfu$elm_hangman$Types$Lost = {ctor: 'Lost'};
 var _runarfu$elm_hangman$Types$Playing = {ctor: 'Playing'};
+var _runarfu$elm_hangman$GameUtils$englishAlphabetUppercased = _elm_lang$core$Set$fromList(
+	A2(
+		_elm_lang$core$List$map,
+		_elm_lang$core$Char$fromCode,
+		_elm_lang$core$Native_List.range(
+			_elm_lang$core$Char$toCode(
+				_elm_lang$core$Native_Utils.chr('A')),
+			_elm_lang$core$Char$toCode(
+				_elm_lang$core$Native_Utils.chr('Z')))));
+var _runarfu$elm_hangman$GameUtils$uppercaseWords = function (words) {
+	return A2(
+		_elm_lang$core$List$map,
+		_elm_lang$core$String$map(_elm_lang$core$Char$toUpper),
+		words);
+};
+var _runarfu$elm_hangman$GameUtils$newStandardGame = function (secretWords) {
+	var staticData = {
+		secretWords: _runarfu$elm_hangman$GameUtils$uppercaseWords(secretWords),
+		alphabet: _runarfu$elm_hangman$GameUtils$englishAlphabetUppercased,
+		maxGuesses: 10
+	};
+	return {staticData: staticData, guessedCharacters: _elm_lang$core$Set$empty, attemptsLeft: staticData.maxGuesses, state: _runarfu$elm_hangman$Types$Playing};
+};
+var _runarfu$elm_hangman$Secrets$secretWords = _elm_lang$core$String$words('the wonderful world of elm');
 var _runarfu$elm_hangman$Views$centerStyle = _elm_lang$html$Html_Attributes$style(
 	_elm_lang$core$Native_List.fromArray(
 		[
@@ -8040,13 +8064,17 @@ var _runarfu$elm_hangman$Views$progressStatusMessage = function (game) {
 	var _p0 = game.state;
 	switch (_p0.ctor) {
 		case 'Playing':
+			var pluralOrSingularAttempt = _elm_lang$core$Native_Utils.eq(game.attemptsLeft, 1) ? 'attempt' : 'attempts';
 			return A2(
 				_elm_lang$core$Basics_ops['++'],
 				'You have ',
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					_elm_lang$core$Basics$toString(game.attemptsLeft),
-					' attempts left'));
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' ',
+						A2(_elm_lang$core$Basics_ops['++'], pluralOrSingularAttempt, ' left'))));
 		case 'Won':
 			return 'You won!';
 		default:
@@ -8112,40 +8140,60 @@ var _runarfu$elm_hangman$Views$viewButtons = function (game) {
 			},
 			unusedCharacters));
 };
+var _runarfu$elm_hangman$Views$spaceLetters = function (string) {
+	return _elm_lang$core$String$fromList(
+		A2(
+			_elm_lang$core$List$intersperse,
+			_elm_lang$core$Native_Utils.chr(' '),
+			_elm_lang$core$String$toList(string)));
+};
 var _runarfu$elm_hangman$Views$hideSingleCharacter = F2(
 	function (guessedCharacters, guessedCharacter) {
 		return A2(_elm_lang$core$Set$member, guessedCharacter, guessedCharacters) ? guessedCharacter : _elm_lang$core$Native_Utils.chr('_');
 	});
-var _runarfu$elm_hangman$Views$hideCharacters = F3(
-	function (secretWord, gameState, guessedCharacters) {
-		var _p1 = gameState;
-		switch (_p1.ctor) {
-			case 'Playing':
-				return _elm_lang$core$String$fromList(
-					A2(
-						_elm_lang$core$List$map,
-						_runarfu$elm_hangman$Views$hideSingleCharacter(guessedCharacters),
-						_elm_lang$core$String$toList(secretWord)));
-			case 'Won':
-				return secretWord;
-			default:
-				return secretWord;
-		}
+var _runarfu$elm_hangman$Views$hideSingleCharacterInWord = F2(
+	function (guessedCharacters, word) {
+		return _elm_lang$core$String$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				_runarfu$elm_hangman$Views$hideSingleCharacter(guessedCharacters),
+				_elm_lang$core$String$toList(word)));
 	});
-var _runarfu$elm_hangman$Views$viewSecretWord = function (game) {
-	var word = A3(_runarfu$elm_hangman$Views$hideCharacters, game.staticData.secretWord, game.state, game.guessedCharacters);
-	var wordWithSpaces = _elm_lang$core$String$fromList(
-		A2(
-			_elm_lang$core$List$intersperse,
-			_elm_lang$core$Native_Utils.chr(' '),
-			_elm_lang$core$String$toList(word)));
+var _runarfu$elm_hangman$Views$hideUnguessedCharacters = function (game) {
+	var _p1 = game.state;
+	switch (_p1.ctor) {
+		case 'Playing':
+			return A2(
+				_elm_lang$core$List$map,
+				_runarfu$elm_hangman$Views$hideSingleCharacterInWord(game.guessedCharacters),
+				game.staticData.secretWords);
+		case 'Won':
+			return game.staticData.secretWords;
+		default:
+			return game.staticData.secretWords;
+	}
+};
+var _runarfu$elm_hangman$Views$viewSecretWords = function (game) {
 	return A2(
 		_elm_lang$html$Html$h2,
 		_elm_lang$core$Native_List.fromArray(
-			[]),
+			[
+				_elm_lang$html$Html_Attributes$style(
+				_elm_lang$core$Native_List.fromArray(
+					[
+						{ctor: '_Tuple2', _0: 'font-family', _1: 'courier'}
+					]))
+			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html$text(wordWithSpaces)
+				_elm_lang$html$Html$text(
+				A2(
+					_elm_lang$core$String$join,
+					' - ',
+					A2(
+						_elm_lang$core$List$map,
+						_runarfu$elm_hangman$Views$spaceLetters,
+						_runarfu$elm_hangman$Views$hideUnguessedCharacters(game))))
 			]));
 };
 var _runarfu$elm_hangman$Views$viewGame = function (game) {
@@ -8155,7 +8203,7 @@ var _runarfu$elm_hangman$Views$viewGame = function (game) {
 			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_runarfu$elm_hangman$Views$viewSecretWord(game),
+				_runarfu$elm_hangman$Views$viewSecretWords(game),
 				_runarfu$elm_hangman$Views$viewButtons(game),
 				_runarfu$elm_hangman$Views$viewProgress(game)
 			]));
@@ -8166,7 +8214,7 @@ var _runarfu$elm_hangman$Views$header = A2(
 		[]),
 	_elm_lang$core$Native_List.fromArray(
 		[
-			_elm_lang$html$Html$text('Hangman')
+			_elm_lang$html$Html$text('Hangman in Elm')
 		]));
 var _runarfu$elm_hangman$Views$view = function (game) {
 	return A2(
@@ -8179,33 +8227,34 @@ var _runarfu$elm_hangman$Views$view = function (game) {
 				_runarfu$elm_hangman$Views$viewGame(game)
 			]));
 };
-var _runarfu$elm_hangman$State$englishAlphabetUppercased = _elm_lang$core$Set$fromList(
-	A2(
-		_elm_lang$core$List$map,
-		_elm_lang$core$Char$fromCode,
-		_elm_lang$core$Native_List.range(
-			_elm_lang$core$Char$toCode(
-				_elm_lang$core$Native_Utils.chr('A')),
-			_elm_lang$core$Char$toCode(
-				_elm_lang$core$Native_Utils.chr('Z')))));
 var _runarfu$elm_hangman$State$determineNewState = function (game) {
 	var everyLetterIsGuessedCorrectly = A2(
-		_elm_lang$core$String$all,
-		function (c) {
-			return A2(_elm_lang$core$Set$member, c, game.guessedCharacters);
-		},
-		game.staticData.secretWord);
-	var newGameState = _elm_lang$core$Native_Utils.eq(game.attemptsLeft, 0) ? _runarfu$elm_hangman$Types$Lost : (everyLetterIsGuessedCorrectly ? _runarfu$elm_hangman$Types$Won : _runarfu$elm_hangman$Types$Playing);
+		F2(
+			function (x, y) {
+				return _elm_lang$core$Native_Utils.eq(x, y);
+			}),
+		game.guessedCharacters,
+		_elm_lang$core$Set$fromList(
+			_elm_lang$core$String$toList(
+				_elm_lang$core$String$concat(game.staticData.secretWords))));
+	var newState = _elm_lang$core$Native_Utils.eq(game.attemptsLeft, 0) ? _runarfu$elm_hangman$Types$Lost : (everyLetterIsGuessedCorrectly ? _runarfu$elm_hangman$Types$Won : _runarfu$elm_hangman$Types$Playing);
 	return _elm_lang$core$Native_Utils.update(
 		game,
-		{state: newGameState});
+		{state: newState});
 };
 var _runarfu$elm_hangman$State$guessedCharacter = F2(
 	function (character, game) {
 		var guessedRight = A2(
-			_elm_lang$core$List$member,
-			character,
-			_elm_lang$core$String$toList(game.staticData.secretWord));
+			_elm_lang$core$List$any,
+			F2(
+				function (x, y) {
+					return _elm_lang$core$Native_Utils.eq(x, y);
+				})(true),
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$String$contains(
+					_elm_lang$core$String$fromChar(character)),
+				game.staticData.secretWords));
 		var newAttemptsLeft = guessedRight ? game.attemptsLeft : (game.attemptsLeft - 1);
 		var newGuessedCharacters = A2(_elm_lang$core$Set$insert, character, game.guessedCharacters);
 		return _elm_lang$core$Native_Utils.update(
@@ -8218,19 +8267,10 @@ var _runarfu$elm_hangman$State$update = F2(
 		return _runarfu$elm_hangman$State$determineNewState(
 			A2(_runarfu$elm_hangman$State$guessedCharacter, _p0._0, game));
 	});
-var _runarfu$elm_hangman$State$newStandardGame = function (secretWord) {
-	var staticData = {
-		secretWord: A2(_elm_lang$core$String$map, _elm_lang$core$Char$toUpper, secretWord),
-		alphabet: _runarfu$elm_hangman$State$englishAlphabetUppercased,
-		maxGuesses: 10
-	};
-	return {staticData: staticData, guessedCharacters: _elm_lang$core$Set$empty, attemptsLeft: staticData.maxGuesses, state: _runarfu$elm_hangman$Types$Playing};
-};
-var _runarfu$elm_hangman$SecretWord$secretWord = 'typesafefrontend';
 var _runarfu$elm_hangman$Main$main = {
 	main: _elm_lang$html$Html_App$beginnerProgram(
 		{
-			model: _runarfu$elm_hangman$State$newStandardGame(_runarfu$elm_hangman$SecretWord$secretWord),
+			model: _runarfu$elm_hangman$GameUtils$newStandardGame(_runarfu$elm_hangman$Secrets$secretWords),
 			view: _runarfu$elm_hangman$Views$view,
 			update: _runarfu$elm_hangman$State$update
 		})
