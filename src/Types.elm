@@ -7,6 +7,10 @@ type alias Letters =
     Set Char
 
 
+type alias Words =
+    List String
+
+
 type alias Game =
     { staticData : StaticData
     , guessedCharacters : Letters
@@ -16,7 +20,7 @@ type alias Game =
 
 
 type alias StaticData =
-    { secretWord : String
+    { secretWords : Words
     , alphabet : Letters
     , maxGuesses : Int
     }

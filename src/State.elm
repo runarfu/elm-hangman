@@ -1,25 +1,9 @@
-module State exposing (newStandardGame, update)
+module State exposing (update)
 
 import Set exposing (Set)
 import Char
 import String
 import Types exposing (..)
-
-
-newStandardGame : String -> Game
-newStandardGame secretWord =
-    let
-        staticData =
-            { secretWord = String.map Char.toUpper secretWord
-            , alphabet = englishAlphabetUppercased
-            , maxGuesses = 10
-            }
-    in
-        { staticData = staticData
-        , guessedCharacters = Set.empty
-        , attemptsLeft = staticData.maxGuesses
-        , state = Playing
-        }
 
 
 update : Msg -> Game -> Game
@@ -38,7 +22,9 @@ guessedCharacter character game =
             Set.insert character game.guessedCharacters
 
         guessedRight =
-            List.member character (String.toList game.staticData.secretWord)
+            game.staticData.secretWords
+                |> List.map (String.contains (String.fromChar character))
+                |> List.any ((==) True)
 
         newAttemptsLeft =
             if guessedRight then
@@ -56,9 +42,13 @@ determineNewState : Game -> Game
 determineNewState game =
     let
         everyLetterIsGuessedCorrectly =
-            String.all (\c -> Set.member c game.guessedCharacters) game.staticData.secretWord
+            game.staticData.secretWords
+                |> String.concat
+                |> String.toList
+                |> Set.fromList
+                |> ((==) game.guessedCharacters)
 
-        newGameState =
+        newState =
             if game.attemptsLeft == 0 then
                 Lost
             else if everyLetterIsGuessedCorrectly then
@@ -66,11 +56,4 @@ determineNewState game =
             else
                 Playing
     in
-        { game | state = newGameState }
-
-
-englishAlphabetUppercased : Letters
-englishAlphabetUppercased =
-    [Char.toCode 'A'..Char.toCode 'Z']
-        |> List.map Char.fromCode
-        |> Set.fromList
+        { game | state = newState }
