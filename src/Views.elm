@@ -17,34 +17,30 @@ view game =
 
 
 header =
-    h1 [] [ text "Hangman" ]
+    h1 [] [ text "Hangman in Elm" ]
 
 
 viewGame : Game -> Html Msg
 viewGame game =
     div []
-        [ viewSecretWord game
+        [ viewSecretWords game
         , viewButtons game
         , viewProgress game
         ]
 
 
-viewSecretWord : Game -> Html Msg
-viewSecretWord game =
-    let
-        words =
-            hideCharacters game
-    in
-        h2 [ style [ ( "font-family", "courier" ) ] ]
-            [ words
-                |> List.map spaceLetters
-                |> String.join " - "
-                |> text
-            ]
+viewSecretWords : Game -> Html Msg
+viewSecretWords game =
+    h2 [ style [ ( "font-family", "courier" ) ] ]
+        [ hideUnguessedCharacters game
+            |> List.map spaceLetters
+            |> String.join " - "
+            |> text
+        ]
 
 
-hideCharacters : Game -> Words
-hideCharacters game =
+hideUnguessedCharacters : Game -> Words
+hideUnguessedCharacters game =
     case game.state of
         Playing ->
             game.staticData.secretWords
@@ -55,14 +51,6 @@ hideCharacters game =
 
         Lost ->
             game.staticData.secretWords
-
-
-spaceLetters : String -> String
-spaceLetters string =
-    string
-        |> String.toList
-        |> List.intersperse ' '
-        |> String.fromList
 
 
 hideSingleCharacterInWord : Letters -> String -> String
@@ -79,6 +67,14 @@ hideSingleCharacter guessedCharacters guessedCharacter =
         guessedCharacter
     else
         '_'
+
+
+spaceLetters : String -> String
+spaceLetters string =
+    string
+        |> String.toList
+        |> List.intersperse ' '
+        |> String.fromList
 
 
 viewButtons : Game -> Html Msg
