@@ -45,7 +45,8 @@ determineNewState game =
             game.staticData.secretWords
                 |> String.concat
                 |> String.toList
-                |> List.all (\c -> Set.member c game.guessedCharacters)
+                |> Set.fromList
+                |> ((==) game.guessedCharacters)
 
         newState =
             if game.attemptsLeft == 0 then
