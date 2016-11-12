@@ -33,7 +33,7 @@ viewSecretWord : Game -> Html Msg
 viewSecretWord game =
     let
         words =
-            hideCharacters game.staticData.secretWords game.state game.guessedCharacters
+            hideCharacters game
     in
         h2 [ style [ ( "font-family", "courier" ) ] ]
             [ words
@@ -43,18 +43,18 @@ viewSecretWord game =
             ]
 
 
-hideCharacters : Words -> GameState -> Letters -> Words
-hideCharacters secretWords gameState guessedCharacters =
-    case gameState of
+hideCharacters : Game -> Words
+hideCharacters game =
+    case game.state of
         Playing ->
-            secretWords
-                |> List.map (hideSingleCharacterInWord guessedCharacters)
+            game.staticData.secretWords
+                |> List.map (hideSingleCharacterInWord game.guessedCharacters)
 
         Won ->
-            secretWords
+            game.staticData.secretWords
 
         Lost ->
-            secretWords
+            game.staticData.secretWords
 
 
 spaceLetters : String -> String
