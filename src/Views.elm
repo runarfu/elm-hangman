@@ -118,7 +118,18 @@ progressStatusMessage : Game -> String
 progressStatusMessage game =
     case game.state of
         Playing ->
-            "You have " ++ (toString game.attemptsLeft) ++ " attempts left"
+            let
+                pluralOrSingularAttempt =
+                    if game.attemptsLeft == 1 then
+                        "attempt"
+                    else
+                        "attempts"
+            in
+                "You have "
+                    ++ (toString game.attemptsLeft)
+                    ++ " "
+                    ++ pluralOrSingularAttempt
+                    ++ " left"
 
         Won ->
             "You won!"
