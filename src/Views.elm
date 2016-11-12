@@ -45,10 +45,6 @@ hideCharacters secretWords gameState guessedCharacters =
             secretWords
                 |> List.map (hideSingleCharacterInWord guessedCharacters)
 
-        -- |> List.map
-        -- |> List.map (\w -> (List.map (hideSingleCharacter guessedCharacters) w))
-        -- |> List.map (\w -> toString (List.map (hideSingleCharacter guessedCharacters) (String.toList w)))
-        -- |> List.map (\w -> List.map (List.map hideSingleCharacter guessedCharacters))
         Won ->
             List.map spaceLetters secretWords
 
