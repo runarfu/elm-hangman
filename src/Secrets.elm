@@ -1,8 +1,10 @@
 module Secrets exposing (secretWords)
 
+import String
 import Types exposing (Words)
 
 
 secretWords : Words
 secretWords =
-    [ "typesafe", "frontend" ]
+    "the wonderful world of elm"
+        |> String.words
