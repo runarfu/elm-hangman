@@ -35,7 +35,12 @@ viewSecretWord game =
         words =
             hideCharacters game.staticData.secretWords game.state game.guessedCharacters
     in
-        h2 [ style [ ( "font-family", "courier" ) ] ] [ text (String.join " - " words) ]
+        h2 [ style [ ( "font-family", "courier" ) ] ]
+            [ words
+                |> List.map spaceLetters
+                |> String.join " - "
+                |> text
+            ]
 
 
 hideCharacters : Words -> GameState -> Letters -> Words
@@ -46,10 +51,10 @@ hideCharacters secretWords gameState guessedCharacters =
                 |> List.map (hideSingleCharacterInWord guessedCharacters)
 
         Won ->
-            List.map spaceLetters secretWords
+            secretWords
 
         Lost ->
-            List.map spaceLetters secretWords
+            secretWords
 
 
 spaceLetters : String -> String
@@ -65,7 +70,6 @@ hideSingleCharacterInWord guessedCharacters word =
     word
         |> String.toList
         |> List.map (hideSingleCharacter guessedCharacters)
-        |> List.intersperse ' '
         |> String.fromList
 
 
