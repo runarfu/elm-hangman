@@ -1,15 +1,16 @@
 module Main exposing (..)
 
 import Html.App as App
-import Views exposing (..)
-import State exposing (..)
+import GameUtils
 import Secrets
+import Views
+import State
 
 
 main : Program Never
 main =
     App.beginnerProgram
-        { model = newStandardGame Secrets.secretWords
-        , view = view
-        , update = update
+        { model = GameUtils.newStandardGame Secrets.secretWords
+        , view = Views.view
+        , update = State.update
         }

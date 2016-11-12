@@ -1,30 +1,9 @@
-module State exposing (newStandardGame, update)
+module State exposing (update)
 
 import Set exposing (Set)
 import Char
 import String
 import Types exposing (..)
-
-
-newStandardGame : Words -> Game
-newStandardGame secretWords =
-    let
-        staticData =
-            { secretWords = uppercaseWords secretWords
-            , alphabet = englishAlphabetUppercased
-            , maxGuesses = 10
-            }
-    in
-        { staticData = staticData
-        , guessedCharacters = Set.empty
-        , attemptsLeft = staticData.maxGuesses
-        , state = Playing
-        }
-
-
-uppercaseWords : Words -> Words
-uppercaseWords words =
-    List.map (String.map Char.toUpper) words
 
 
 update : Msg -> Game -> Game
@@ -43,9 +22,10 @@ guessedCharacter character game =
             Set.insert character game.guessedCharacters
 
         guessedRight =
-            List.any (\w -> (String.contains (String.fromChar character) w)) game.staticData.secretWords
+            game.staticData.secretWords
+                |> List.map (String.contains (String.fromChar character))
+                |> List.any ((==) True)
 
-        -- List.any (List.member character) String.join "" game.staticData.secretWords
         newAttemptsLeft =
             if guessedRight then
                 game.attemptsLeft
@@ -63,12 +43,11 @@ determineNewState game =
     let
         everyLetterIsGuessedCorrectly =
             game.staticData.secretWords
-                |> String.join ""
+                |> String.concat
                 |> String.toList
                 |> List.all (\c -> Set.member c game.guessedCharacters)
 
-        -- List.all (\w -> Set.member c game.guessedCharacters) game.staticData.secretWords
-        newGameState =
+        newState =
             if game.attemptsLeft == 0 then
                 Lost
             else if everyLetterIsGuessedCorrectly then
@@ -76,11 +55,4 @@ determineNewState game =
             else
                 Playing
     in
-        { game | state = newGameState }
-
-
-englishAlphabetUppercased : Letters
-englishAlphabetUppercased =
-    [Char.toCode 'A'..Char.toCode 'Z']
-        |> List.map Char.fromCode
-        |> Set.fromList
+        { game | state = newState }
