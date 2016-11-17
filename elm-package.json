@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "summary": "A simple version of Hangman.",
     "repository": "http://github.com/runarfu/elm-hangman.git",
     "license": "GNU GPL",
