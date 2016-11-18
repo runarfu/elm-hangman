@@ -29,6 +29,6 @@ uppercaseWords words =
 
 englishAlphabetUppercased : Letters
 englishAlphabetUppercased =
-    [Char.toCode 'A'..Char.toCode 'Z']
+    List.range (Char.toCode 'A') (Char.toCode 'Z')
         |> List.map Char.fromCode
         |> Set.fromList
