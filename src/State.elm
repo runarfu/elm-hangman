@@ -41,12 +41,15 @@ guessedCharacter character game =
 determineNewState : Game -> Game
 determineNewState game =
     let
-        everyLetterIsGuessedCorrectly =
+        lettersInSecretWords =
             game.staticData.secretWords
                 |> String.concat
                 |> String.toList
                 |> Set.fromList
-                |> ((==) game.guessedCharacters)
+
+        everyLetterIsGuessedCorrectly =
+            Set.diff lettersInSecretWords game.guessedCharacters
+                |> Set.isEmpty
 
         newState =
             if game.attemptsLeft == 0 then
